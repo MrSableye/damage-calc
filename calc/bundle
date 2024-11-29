@@ -11,20 +11,22 @@ let bundled = `(() => {
 'use strict';
 const exports = {};
 `;
+bundled += bundler.read('data/mods/mods.js', 4);
+bundled += '\nvar mods_1 = exports;\n';
 bundled += bundler.read('util.js', 3, 1);
 const species = bundler.read('data/species.js').split('\n');
 bundled += species.slice(1, 64).join('\n'); // generator + iterator + spreadArray polyfill
 bundled += '\nvar e_1, _a, e_2, _b;\nvar util_1 = exports;\n';
-bundled += species.slice(68, -2).join('\n');
+bundled += species.slice(79, -2).join('\n');
 
 const types = bundler.read('data/types.js').split('\n');
 bundled += types.slice(1, 12).join('\n'); // __assign polyfill
-bundled += types.slice(54, -2).join('\n')
+bundled += types.slice(70, -2).join('\n')
 const natures = bundler.read('data/natures.js').split('\n');
 bundled += natures.slice(28, 44).join('\n'); // __read polyfill
 bundled += natures.slice(47, -2).join('\n');
-bundled += bundler.read('data/abilities.js', 43, 1);
-bundled += bundler.read('data/moves.js', 43, 1);
+bundled += bundler.read('data/abilities.js', 59, 1);
+bundled += bundler.read('data/moves.js', 70, 1);
 bundled += bundler.read('data/items.js', 68, 1);
 bundled += `
 var abilities_1 = exports;
@@ -40,12 +42,17 @@ bundled += `
 window.calc = Object.assign(window.calc || {}, {
   Generations: exports.Generations,
   ABILITIES: exports.ABILITIES,
+  MOD_ABILITIES: exports.MOD_ABILITIES,
   ITEMS: exports.ITEMS,
+  MOD_ITEMS: exports.MOD_ITEMS,
   MEGA_STONES: exports.MEGA_STONES,
   MOVES: exports.MOVES,
+  MOD_MOVES: exports.MOD_MOVES,
   SPECIES: exports.SPECIES,
+  MOD_SPECIES: exports.MOD_SPECIES,
   NATURES: exports.NATURES,
   TYPE_CHART: exports.TYPE_CHART,
+  MOD_TYPE_CHART: exports.MOD_TYPE_CHART,
 });
 })();`
 bundler.bundle(bundled, 'data/production.min.js');

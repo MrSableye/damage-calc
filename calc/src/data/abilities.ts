@@ -1,5 +1,6 @@
 import type * as I from './interface';
 import {toID} from '../util';
+import {MODS} from './mods/mods';
 
 const RBY: string[] = [];
 
@@ -340,20 +341,30 @@ const SV = SS.concat([
 ]);
 
 export const ABILITIES = [[], RBY, GSC, ADV, DPP, BW, XY, SM, SS, SV];
+export const MOD_ABILITIES: Record<string, string[]> = {};
 
 export class Abilities implements I.Abilities {
   private readonly gen: I.GenerationNum;
+  private readonly mod?: string;
 
-  constructor(gen: I.GenerationNum) {
+  constructor(gen: I.GenerationNum, mod?: string) {
     this.gen = gen;
+    this.mod = mod;
   }
 
   get(id: I.ID) {
+    if (this.mod) {
+      return MOD_ABILITIES_BY_ID[this.mod][id];
+    }
+
     return ABILITIES_BY_ID[this.gen][id];
   }
 
   *[Symbol.iterator]() {
-    for (const id in ABILITIES_BY_ID[this.gen]) {
+    const entry = this.mod
+      ? MOD_ABILITIES_BY_ID[this.mod]
+      : ABILITIES_BY_ID[this.gen];
+    for (const id in entry) {
       yield this.get(id as I.ID)!;
     }
   }
@@ -372,6 +383,7 @@ class Ability implements I.Ability {
 }
 
 const ABILITIES_BY_ID: Array<{[id: string]: Ability}> = [];
+const MOD_ABILITIES_BY_ID: Record<string, Record<string, Ability>> = {};
 
 for (const abilities of ABILITIES) {
   const map: {[id: string]: Ability} = {};
@@ -381,3 +393,17 @@ for (const abilities of ABILITIES) {
   }
   ABILITIES_BY_ID.push(map);
 }
+
+Object.entries(MODS).forEach(([modId, mod]) => {
+  if (!MOD_ABILITIES_BY_ID[modId]) {
+    MOD_ABILITIES_BY_ID[modId] = {};
+  }
+  const modAbilities = MOD_ABILITIES_BY_ID[modId];
+  if (modAbilities) {
+    Object.entries(mod.abilities).forEach(([abilityId, ability]) => {
+      modAbilities[toID(abilityId)] = new Ability((ability as any).name);
+    });
+  }
+
+  MOD_ABILITIES[modId] = Object.values(mod.abilities).map((ability: any) => ability.name);
+});

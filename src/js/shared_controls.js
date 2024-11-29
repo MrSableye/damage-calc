@@ -1034,7 +1034,7 @@ function createPokemon(pokeInfo) {
 		var pokemonMoves = [];
 		for (var i = 0; i < 4; i++) {
 			var moveName = moveNames[i];
-			pokemonMoves.push(new calc.Move(gen, moves[moveName] ? moveName : "(No Move)", {ability: ability, item: item}));
+			pokemonMoves.push(new calc.Move(GENERATION || gen, moves[moveName] ? moveName : "(No Move)", {ability: ability, item: item}));
 		}
 
 		if (isRandoms) {
@@ -1043,7 +1043,7 @@ function createPokemon(pokeInfo) {
 			});
 		}
 
-		return new calc.Pokemon(gen, name, {
+		return new calc.Pokemon(GENERATION || gen, name, {
 			level: set.level,
 			ability: set.ability,
 			abilityOn: true,
@@ -1094,7 +1094,7 @@ function createPokemon(pokeInfo) {
 		// FIXME the Pokemon constructor expects non-dynamaxed HP
 		if (isDynamaxed) curHP = Math.floor(curHP / 2);
 		var types = [pokeInfo.find(".type1").val(), pokeInfo.find(".type2").val()];
-		return new calc.Pokemon(gen, name, {
+		return new calc.Pokemon(GENERATION || gen, name, {
 			level: ~~pokeInfo.find(".level").val(),
 			ability: ability,
 			abilityOn: pokeInfo.find(".abilityToggle").is(":checked"),
@@ -1156,7 +1156,7 @@ function getMoveDetails(moveInfo, opts) {
 		if (isStellar) overrides.self = {boosts: {atk: -1, spa: -1}};
 	}
 	if (gen >= 4) overrides.category = moveInfo.find(".move-cat").val();
-	return new calc.Move(gen, moveName, {
+	return new calc.Move(GENERATION || gen, moveName, {
 		ability: opts.ability, item: opts.item, useZ: isZMove, species: opts.species, isCrit: isCrit, hits: hits,
 		isStellarFirstUse: isStellarFirstUse, timesUsed: timesUsed, timesUsedWithMetronome: timesUsedWithMetronome,
 		overrides: overrides, useMax: opts.isDynamaxed
@@ -1298,7 +1298,7 @@ function calcStat(poke, StatID) {
 	return total;
 }
 
-var GENERATION = {
+var GENERATIONS = {
 	'1': 1, 'rb': 1, 'rby': 1,
 	'2': 2, 'gs': 2, 'gsc': 2,
 	'3': 3, 'rs': 3, 'rse': 3, 'frlg': 3, 'adv': 3,
@@ -1397,12 +1397,16 @@ var RANDDEX = [
 	GEN8RANDSETS,
 	GEN9RANDSETS,
 ];
-var gen, genWasChanged, notation, pokedex, setdex, randdex, typeChart, moves, abilities, items, calcHP, calcStat, GENERATION;
+var gen, mod, genWasChanged, notation, pokedex, setdex, randdex, typeChart, moves, abilities, items, calcHP, calcStat, GENERATION;
+gen = 9
 
 $(".gen").change(function () {
 	/*eslint-disable */
-	gen = ~~$(this).val() || 9;
-	GENERATION = calc.Generations.get(gen);
+	split = ($(this).val() || '9').split(':');
+	genString = split[0];
+	mod = split[1];
+	gen = ~~genString || 9;
+	GENERATION = calc.Generations.get(gen, mod);
 	var params = new URLSearchParams(window.location.search);
 	if (gen === 9) {
 		params.delete('gen');
@@ -1422,14 +1426,14 @@ $(".gen").change(function () {
 	genWasChanged = true;
 	/* eslint-enable */
 	// declaring these variables with var here makes z moves not work; TODO
-	pokedex = calc.SPECIES[gen];
-	setdex = SETDEX[gen];
+	pokedex = mod ? calc.MOD_SPECIES[mod] : calc.SPECIES[gen];
+	setdex = mod ? SETDEX_MODS[mod] : SETDEX[gen];
 	randdex = RANDDEX[gen];
 	if ('Aegislash' in randdex) randdex['Aegislash-Shield'] = randdex['Aegislash'];
-	typeChart = calc.TYPE_CHART[gen];
-	moves = calc.MOVES[gen];
-	items = calc.ITEMS[gen];
-	abilities = calc.ABILITIES[gen];
+	typeChart = mod ? calc.MOD_TYPE_CHART[mod] : calc.TYPE_CHART[gen];
+	moves = mod ? calc.MOD_MOVES[mod] : calc.MOVES[gen];
+	items = mod ? calc.MOD_ITEMS[mod] : calc.ITEMS[gen];
+	abilities = mod ? calc.MOD_ABILITIES[mod] : calc.ABILITIES[gen];
 	clearField();
 	$("#importedSets").prop("checked", false);
 	loadDefaultLists();
@@ -1454,7 +1458,7 @@ function getFirstValidSetOption() {
 	var sets = getSetOptions();
 	// NB: The first set is never valid, so we start searching after it.
 	for (var i = 1; i < sets.length; i++) {
-		if (sets[i].id && sets[i].id.indexOf('(Blank Set)') === -1) return sets[i];
+		if (sets[i].id) return sets[i];
 	}
 	return undefined;
 }
@@ -1763,7 +1767,7 @@ function loadCustomList(id) {
 
 $(document).ready(function () {
 	var params = new URLSearchParams(window.location.search);
-	var g = GENERATION[params.get('gen')] || 9;
+	var g = "8clover";
 	$("#gen" + g).prop("checked", true);
 	$("#gen" + g).change();
 	$("#percentage").prop("checked", true);

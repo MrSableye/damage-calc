@@ -1,0 +1,1 @@
+export const MODS: Record<string, any> = {};

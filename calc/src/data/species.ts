@@ -1,5 +1,6 @@
 import type * as I from './interface';
 import {type DeepPartial, toID, extend, assignWithout} from '../util';
+import {MODS} from './mods/mods';
 
 export interface SpeciesData {
   readonly types: [I.TypeName] | [I.TypeName, I.TypeName];
@@ -10023,20 +10024,30 @@ const SV_PATCH: {[name: string]: DeepPartial<SpeciesData>} = {
 const SV: {[name: string]: SpeciesData} = extend(true, {}, SS, SV_PATCH, PLA_PATCH);
 
 export const SPECIES = [{}, RBY, GSC, ADV, DPP, BW, XY, SM, SS, SV];
+export const MOD_SPECIES: Record<string, Record<string, SpeciesData>> = {};
 
 export class Species implements I.Species {
   private readonly gen: I.GenerationNum;
+  private readonly mod?: string;
 
-  constructor(gen: I.GenerationNum) {
+  constructor(gen: I.GenerationNum, mod?: string) {
     this.gen = gen;
+    this.mod = mod;
   }
 
   get(id: I.ID) {
+    if (this.mod) {
+      return MOD_SPECIES_BY_ID[this.mod][id];
+    }
+
     return SPECIES_BY_ID[this.gen][id];
   }
 
   *[Symbol.iterator]() {
-    for (const id in SPECIES_BY_ID[this.gen]) {
+    const entry = this.mod
+      ? MOD_SPECIES_BY_ID[this.mod]
+      : SPECIES_BY_ID[this.gen];
+    for (const id in entry) {
       yield this.get(id as I.ID)!;
     }
   }
@@ -10084,6 +10095,7 @@ class Specie implements I.Specie {
   }
 }
 const SPECIES_BY_ID: Array<{[id: string]: Specie}> = [];
+const MOD_SPECIES_BY_ID: Record<string, Record<string, Specie>> = {};
 
 let gen = 0;
 for (const species of SPECIES) {
@@ -10096,3 +10108,20 @@ for (const species of SPECIES) {
   SPECIES_BY_ID.push(map);
   gen++;
 }
+
+Object.entries(MODS).forEach(([modId, mod]) => {
+  if (!MOD_SPECIES_BY_ID[modId]) {
+    MOD_SPECIES_BY_ID[modId] = {};
+  }
+  const modSpecies = MOD_SPECIES_BY_ID[modId];
+  if (modSpecies) {
+    Object.entries(mod.pokedex).forEach(([pokemonId, pokemon]) => {
+      modSpecies[toID(pokemonId)] = new Specie((pokemon as any).name, pokemon as SpeciesData);
+    });
+  }
+
+  MOD_SPECIES[modId] = Object.values(mod.pokedex as unknown as Record<string, SpeciesData>).reduce((previous, current) => ({
+    ...previous,
+    [(current as any).name || '']: current,
+  }), {} as Record<string, SpeciesData>);
+});

@@ -6,6 +6,19 @@ const fs = require('fs');
 const crypto = require('crypto');
 
 const rootDir = '.';
+const MODS = [
+	{modGen: 8, mod: 'clover', name: 'Pokémon Clover', offset: 69000},
+	{modGen: 8, mod: 'clovercap', name: 'Pokémon Clover CAP', offset: 42000},
+	{modGen: 8, mod: 'cloverblobboscap', name: 'Create-a-Blobbos', offset: 69000},
+	{modGen: 8, mod: 'sandbox', name: 'Sandbox'},
+	{modGen: 8, mod: 'cope', name: 'Pokémon Cope'},
+	{modGen: 8, mod: 'wack', name: 'Pokémon Wack', offset: 666000},
+	{modGen: 8, mod: 'sburbmons', name: 'Sburbmon', offset: 413000},
+	{modGen: 8, mod: 'sweet', name: 'Pokémon Sweet', offset: 999000},
+	{modGen: 8, mod: 'clovertest', name: 'Pokémon Clover (2.0 Test)', offset: 69000},
+	{modGen: 8, mod: 'copedraft', name: 'Pokémon Cope Draft'},
+	{modGen: 8, mod: 'wipmons', name: 'WIPMons'},
+];
 
 // update version
 function makeCachebuster(template, output) {
@@ -23,6 +36,7 @@ function makeCachebuster(template, output) {
 
 		return b + '="./' + c + '?' + hash + '"';
 	}).replace(/\.template\.html/g, '.html');
+	indexContents = indexContents.replace("<!--HERE BE MODS-->", MODS.map((mod, index) => `<input class="gen visually-hidden" type="radio" name="gen" value="${mod.modGen}:${mod.mod}" id="gen${mod.modGen}${mod.mod}" ${index === 0 ? 'checked="checked"' : ''} /><label class="btn btn-small btn-left" for="gen${mod.modGen}${mod.mod}">${mod.name}</label>`).join('\n'));
 	process.stdout.write("Writing new `" + output + "` file... ");
 	fs.writeFileSync(path.resolve(rootDir, output), indexContents);
 	console.log("DONE");
@@ -62,8 +76,4 @@ if (process.argv[2] !== 'view') {
 
 cpdir('src', 'dist');
 cpdir('calc/dist', 'dist/calc');
-makeCachebuster('dist/honkalculate.template.html', 'dist/honkalculate.html');
 makeCachebuster('dist/index.template.html', 'dist/index.html');
-makeCachebuster('dist/randoms.template.html', 'dist/randoms.html')
-makeCachebuster('dist/oms.template.html', 'dist/oms.html');
-;

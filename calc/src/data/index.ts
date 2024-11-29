@@ -8,13 +8,14 @@ import {Types} from './types';
 import {Natures} from './natures';
 
 export const Generations: I.Generations = new (class {
-  get(gen: I.GenerationNum) {
-    return new Generation(gen);
+  get(gen: I.GenerationNum, mod?: string) {
+    return new Generation(gen, mod);
   }
 })();
 
 class Generation implements I.Generation {
   num: I.GenerationNum;
+  mod?: string;
 
   abilities: Abilities;
   items: Items;
@@ -23,14 +24,15 @@ class Generation implements I.Generation {
   types: Types;
   natures: Natures;
 
-  constructor(num: I.GenerationNum) {
+  constructor(num: I.GenerationNum, mod?: string) {
     this.num = num;
+    this.mod = mod;
 
-    this.abilities = new Abilities(num);
-    this.items = new Items(num);
-    this.moves = new Moves(num);
-    this.species = new Species(num);
-    this.types = new Types(num);
+    this.abilities = new Abilities(num, mod);
+    this.items = new Items(num, mod);
+    this.moves = new Moves(num, mod);
+    this.species = new Species(num, mod);
+    this.types = new Types(num, mod);
     this.natures = new Natures();
   }
 }

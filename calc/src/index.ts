@@ -147,10 +147,10 @@ export {Generations} from './data/index';
 export {toID} from './util';
 export {type State} from './state';
 
-export {ABILITIES} from './data/abilities';
-export {ITEMS, MEGA_STONES} from './data/items';
-export {MOVES} from './data/moves';
-export {SPECIES} from './data/species';
+export {ABILITIES, MOD_ABILITIES} from './data/abilities';
+export {ITEMS, MEGA_STONES, MOD_ITEMS} from './data/items';
+export {MOD_MOVES, MOVES} from './data/moves';
+export {MOD_SPECIES, SPECIES} from './data/species';
 export {NATURES} from './data/natures';
-export {TYPE_CHART} from './data/types';
+export {MOD_TYPE_CHART, TYPE_CHART} from './data/types';
 export {STATS, Stats} from './stats';

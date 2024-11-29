@@ -33,6 +33,8 @@
         "SETDEX_ADV": false,
         "SETDEX_GSC": false,
         "SETDEX_RBY": false,
+        "SETDEX_MODS": false,
+        "GENERATION": false,
         "GEN1RANDOMBATTLE": false,
         "GEN2RANDOMBATTLE": false,
         "GEN3RANDOMBATTLE": false,

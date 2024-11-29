@@ -1,5 +1,6 @@
 import type * as I from './interface';
 import {toID} from '../util';
+import {MODS} from './mods/mods';
 
 const RBY: string[] = [];
 
@@ -575,20 +576,29 @@ const BERRIES: {[berry: string]: {t: I.TypeName; p: number}} = {
 };
 
 export const ITEMS = [[], RBY, GSC, ADV, DPP, BW, XY, SM, SS, SV];
+export const MOD_ITEMS: Record<string, string[]> = {};
 
 export class Items implements I.Items {
   private readonly gen: I.GenerationNum;
+  private readonly mod?: string;
 
-  constructor(gen: I.GenerationNum) {
+  constructor(gen: I.GenerationNum, mod?: string) {
     this.gen = gen;
+    this.mod = mod;
   }
 
   get(id: I.ID) {
+    if (this.mod) {
+      return MOD_ITEMS_BY_ID[this.mod][id];
+    }
     return ITEMS_BY_ID[this.gen][id];
   }
 
   *[Symbol.iterator]() {
-    for (const id in ITEMS_BY_ID[this.gen]) {
+    const entry = this.mod
+      ? MOD_ITEMS_BY_ID[this.mod]
+      : ITEMS_BY_ID[this.gen];
+    for (const id in entry) {
       yield this.get(id as I.ID)!;
     }
   }
@@ -619,6 +629,7 @@ class Item implements I.Item {
 }
 
 const ITEMS_BY_ID: Array<{[id: string]: Item}> = [];
+const MOD_ITEMS_BY_ID: Record<string, Record<string, Item>> = {};
 
 let gen = 0;
 for (const items of ITEMS) {
@@ -630,3 +641,17 @@ for (const items of ITEMS) {
   ITEMS_BY_ID.push(map);
   gen++;
 }
+
+Object.entries(MODS).forEach(([modId, mod]) => {
+  if (!MOD_ITEMS_BY_ID[modId]) {
+    MOD_ITEMS_BY_ID[modId] = {};
+  }
+  const modItems = MOD_ITEMS_BY_ID[modId];
+  if (modItems) {
+    Object.entries(mod.items).forEach(([itemId, item]) => {
+      modItems[toID(itemId)] = new Item((item as any).name, mod.mod.modGen);
+    });
+  }
+
+  MOD_ITEMS[modId] = Object.values(mod.items).map((item: any) => item.name);
+});

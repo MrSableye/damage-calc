@@ -1,5 +1,6 @@
 import type * as I from '../data/interface';
 import {type DeepPartial, toID, assignWithout, extend} from '../util';
+import {MODS} from './mods/mods';
 
 export interface MoveData {
   readonly name?: string;
@@ -4916,20 +4917,30 @@ const SV_PATCH: {[name: string]: DeepPartial<MoveData>} = {
 const SV: {[name: string]: MoveData} = extend(true, {}, SS, SV_PATCH);
 
 export const MOVES = [{}, RBY, GSC, ADV, DPP, BW, XY, SM, SS, SV];
+export const MOD_MOVES: Record<string, Record<string, MoveData>> = {};
 
 export class Moves implements I.Moves {
   private readonly gen: I.GenerationNum;
+  private readonly mod?: string;
 
-  constructor(gen: I.GenerationNum) {
+  constructor(gen: I.GenerationNum, mod?: string) {
     this.gen = gen;
+    this.mod = mod;
   }
 
   get(id: I.ID) {
+    if (this.mod) {
+      return MOD_MOVES_BY_ID[this.mod][id];
+    }
+
     return MOVES_BY_ID[this.gen][id];
   }
 
   *[Symbol.iterator]() {
-    for (const id in MOVES_BY_ID[this.gen]) {
+    const entry = this.mod
+      ? MOD_MOVES_BY_ID[this.mod]
+      : MOVES_BY_ID[this.gen];
+    for (const id in entry) {
       yield this.get(id as I.ID)!;
     }
   }
@@ -5014,6 +5025,7 @@ class Move implements I.Move {
 }
 
 const MOVES_BY_ID: Array<{[id: string]: Move}> = [];
+const MOD_MOVES_BY_ID: Record<string, Record<string, Move>> = {};
 
 let gen = 0;
 for (const moves of MOVES) {
@@ -5026,3 +5038,20 @@ for (const moves of MOVES) {
   MOVES_BY_ID.push(map);
   gen++;
 }
+
+Object.entries(MODS).forEach(([modId, mod]) => {
+  if (!MOD_MOVES_BY_ID[modId]) {
+    MOD_MOVES_BY_ID[modId] = {};
+  }
+  const modMoves = MOD_MOVES_BY_ID[modId];
+  if (modMoves) {
+    Object.entries(mod.moves).forEach(([moveId, move]) => {
+      modMoves[toID(moveId)] = new Move((move as any).name, move as MoveData, mod.mod.modGen);
+    });
+  }
+
+  MOD_MOVES[modId] = Object.values(mod.moves as unknown as Record<string, MoveData>).reduce((previous, current) => ({
+    ...previous,
+    [current.name || '']: current,
+  }), {} as Record<string, MoveData>);
+});

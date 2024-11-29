@@ -1,5 +1,6 @@
 import type * as I from './interface';
 import {toID, extend} from '../util';
+import {MODS} from './mods/mods';
 
 export type TypeChart = {
   [type in I.TypeName]?: {[type in I.TypeName]?: number};
@@ -432,21 +433,31 @@ const SV: TypeChart = extend(true, {}, SS, {
 });
 
 export const TYPE_CHART = [{}, RBY, GSC, ADV, DPP, BW, XY, SM, SS, SV];
+export const MOD_TYPE_CHART: Record<string, TypeChart> = {};
 
 export class Types implements I.Types {
   private readonly gen: I.GenerationNum;
+  private readonly mod?: string;
 
-  constructor(gen: I.GenerationNum) {
+  constructor(gen: I.GenerationNum, mod?: string) {
     this.gen = gen;
+    this.mod = mod;
   }
 
   get(id: I.ID) {
+    if (this.mod) {
+      return MOD_TYPES_BY_ID[this.mod][id];
+    }
+
     // toID('???') => '', as do many other things, but returning the '???' type seems appropriate :)
     return TYPES_BY_ID[this.gen][id];
   }
 
   *[Symbol.iterator]() {
-    for (const id in TYPES_BY_ID[this.gen]) {
+    const entry = this.mod
+      ? MOD_TYPES_BY_ID[this.mod]
+      : TYPES_BY_ID[this.gen];
+    for (const id in entry) {
       yield this.get(id as I.ID)!;
     }
   }
@@ -467,6 +478,7 @@ class Type implements I.Type {
 }
 
 const TYPES_BY_ID: Array<{[id: string]: Type}> = [];
+const MOD_TYPES_BY_ID: Record<string, Record<string, Type>> = {};
 
 for (const typeChart of TYPE_CHART) {
   const map: {[id: string]: Type} = {};
@@ -476,3 +488,17 @@ for (const typeChart of TYPE_CHART) {
   }
   TYPES_BY_ID.push(map);
 }
+
+Object.entries(MODS).forEach(([modId, mod]) => {
+  if (!MOD_TYPES_BY_ID[modId]) {
+    MOD_TYPES_BY_ID[modId] = {};
+  }
+  const modTypes = MOD_TYPES_BY_ID[modId];
+  if (modTypes) {
+    Object.entries(mod.typechart).forEach(([typeName, type]) => {
+      modTypes[toID(typeName)] = new Type(typeName, type as TypeChart[I.TypeName]);
+    });
+  }
+
+  MOD_TYPE_CHART[modId] = mod.typechart as unknown as TypeChart;
+});
