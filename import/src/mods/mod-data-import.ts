@@ -119,7 +119,7 @@ const getAllModData = async () => Promise.all(
     'export const MODS: Record<string, any> = ' + JSON.stringify(modData),
     'utf8',
   );
-  writeFileSync(modSetsPath, 'var SETDEX_MODS = ' + JSON.stringify(modSets), 'utf8');
+  writeFileSync(modSetsPath, 'var SETDEX_MODS = ' + JSON.stringify(modSets) + ';\n', 'utf8');
   writeFileSync(modTiersPath, JSON.stringify(modTiers), 'utf8');
 
   process.exit(0);
