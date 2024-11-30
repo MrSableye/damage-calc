@@ -57,7 +57,8 @@
         "abilities": true,
         "items": true,
         "createField": false,
-        "createPokemon": false
+        "createPokemon": false,
+        "setdex": true
     },
     "extends": "eslint:recommended",
     "rules": {

@@ -270,6 +270,10 @@ function updateDex(customsets) {
 			SETDEX_GSC[pokemon][moveset] = customsets[pokemon][moveset];
 			if (!SETDEX_RBY[pokemon]) SETDEX_RBY[pokemon] = {};
 			SETDEX_RBY[pokemon][moveset] = customsets[pokemon][moveset];
+			if (setdex) {
+				if (!setdex[pokemon]) setdex[pokemon] = {};
+				setdex[pokemon][moveset] = customsets[pokemon][moveset];
+			}
 		}
 	}
 	localStorage.customsets = JSON.stringify(customsets);
