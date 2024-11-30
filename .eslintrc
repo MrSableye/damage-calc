@@ -54,6 +54,8 @@
         "loadCustomList": false,
         "loadDefaultLists": false,
         "pokedex": true,
+        "abilities": true,
+        "items": true,
         "createField": false,
         "createPokemon": false
     },

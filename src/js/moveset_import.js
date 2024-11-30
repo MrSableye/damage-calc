@@ -85,12 +85,12 @@ function serialize(array, separator) {
 
 function getAbility(row) {
 	var ability = row[1] ? row[1].trim() : '';
-	if (calc.ABILITIES[9].indexOf(ability) !== -1) return ability;
+	if ((abilities || calc.ABILITIES[9]).indexOf(ability) !== -1) return ability;
 }
 
 function getTeraType(row) {
 	var teraType = row[1] ? row[1].trim() : '';
-	if (Object.keys(calc.TYPE_CHART[9]).slice(1).indexOf(teraType) !== -1) return teraType;
+	if (Object.keys(typeChart || calc.TYPE_CHART[9]).slice(1).indexOf(teraType) !== -1) return teraType;
 }
 
 function statToLegacyStat(stat) {
@@ -168,7 +168,7 @@ function getStats(currentPoke, rows, offset) {
 function getItem(currentRow, j) {
 	for (;j < currentRow.length; j++) {
 		var item = currentRow[j].trim();
-		if (calc.ITEMS[9].indexOf(item) != -1) {
+		if ((items || calc.ITEMS[9]).indexOf(item) != -1) {
 			return item;
 		}
 	}
@@ -284,8 +284,8 @@ function addSets(pokes, name) {
 		currentRow = rows[i].split(/[()@]/);
 		for (var j = 0; j < currentRow.length; j++) {
 			currentRow[j] = checkExeptions(currentRow[j].trim());
-			if (calc.SPECIES[9][currentRow[j].trim()] !== undefined) {
-				currentPoke = JSON.parse(JSON.stringify(calc.SPECIES[9][currentRow[j].trim()]));
+			if ((pokedex || calc.SPECIES[9])[currentRow[j].trim()] !== undefined) {
+				currentPoke = JSON.parse(JSON.stringify(pokedex[currentRow[j].trim()]));
 				currentPoke.name = currentRow[j].trim();
 				currentPoke.item = getItem(currentRow, j + 1);
 				if (j === 1 && currentRow[0].trim()) {
